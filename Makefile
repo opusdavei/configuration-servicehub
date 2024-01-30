@@ -94,7 +94,7 @@ endef
 export CROSSPLANE_MAKE_HELP
 
 crossplane.help:
-    @echo "$$CROSSPLANE_MAKE_HELP"
+	@echo "$$CROSSPLANE_MAKE_HELP"
 
 help-special: crossplane.help
 
