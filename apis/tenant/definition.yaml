@@ -1,0 +1,37 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xtenants.example.upbound.io
+spec:
+  group: example.upbound.io
+  names:
+    kind: XTenant
+    plural: xtenants
+  claimNames:
+    kind: Tenant
+    plural: tenants
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        description: Tenants define sets of workloads within the platform; they run within zones
+        type: object
+        properties:
+          spec:
+            description: Specification of the desired state of the Composite Resource
+            type: object
+            properties:
+              parameters:
+                description: Configuration parameters for XTenants
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Tenant ID used throughout the platform
+                  zoneId:
+                    type: string
+                    description: Zone where this Tenant is scheduled to run
+          status:
+            description: Most recently observed state of the Composite Resource
