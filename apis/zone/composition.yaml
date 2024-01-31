@@ -7,16 +7,6 @@ spec:
   compositeTypeRef:
     apiVersion: example.upbound.io/v1alpha1
     kind: XZone
-  environment:
-    environmentConfigs:
-    - type: Selector
-      selector:
-        mode: Multiple
-        minMatch: 1
-        matchLabels: 
-        - key: example.upbound.io/environment
-          type: Value
-          value: configuration-servicehub
   mode: Pipeline
   pipeline:
   - step: patch-and-transform
@@ -32,19 +22,12 @@ spec:
           kind: ControlPlane
           spec:
             deletionPolicy: Orphan
+            forProvider:
+              organizationName: crossplane-by-example
+              configuration: configuration-zone
         patches:
         - fromFieldPath: spec.parameters.id
           toFieldPath: metadata.annotations[crossplane.io/external-name]
-        - fromFieldPath: data.organization
-          toFieldPath: spec.forProvider.organizationName
-          type: FromEnvironmentFieldPath
-          policy:
-            fromFieldPath: Required
-        - fromFieldPath: data.zoneConfiguration
-          toFieldPath: spec.forProvider.configuration
-          type: FromEnvironmentFieldPath
-          policy:
-            fromFieldPath: Required
       - name: robot
         base:
           apiVersion: iam.upbound.io/v1alpha1
@@ -52,16 +35,13 @@ spec:
           spec:
             forProvider:
               description: Zone Controller
+              owner:
+                name: crossplane-by-example
         patches:
         - fromFieldPath: spec.parameters.id
           toFieldPath: spec.forProvider.name
         - fromFieldPath: spec.parameters.id
           toFieldPath: metadata.labels[example.upbound.io/zone-id]
-        - fromFieldPath: data.organization
-          toFieldPath: spec.forProvider.owner.name
-          type: FromEnvironmentFieldPath
-          policy:
-            fromFieldPath: Required
       - name: token
         base:
           apiVersion: iam.upbound.io/v1alpha1
@@ -92,6 +72,7 @@ spec:
           kind: ControlPlaneAuth
           spec:
             forProvider:
+              organizationName: crossplane-by-example
               tokenSecretRef:
                 key: token
             writeConnectionSecretToRef:
@@ -100,11 +81,6 @@ spec:
         patches:
         - fromFieldPath: spec.parameters.id
           toFieldPath: spec.forProvider.controlPlaneName
-        - fromFieldPath: data.organization
-          toFieldPath: spec.forProvider.organizationName
-          type: FromEnvironmentFieldPath
-          policy:
-            fromFieldPath: Required
         - fromFieldPath: spec.writeConnectionSecretToRef.namespace
           toFieldPath: spec.forProvider.tokenSecretRef.namespace
         - fromFieldPath: metadata.uid
