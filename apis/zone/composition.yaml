@@ -1,0 +1,111 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xzones.example.upbound.io
+spec:
+  writeConnectionSecretsToNamespace: upbound-system
+  compositeTypeRef:
+    apiVersion: example.upbound.io/v1alpha1
+    kind: XZone
+  environment:
+    environmentConfigs:
+    - type: Reference
+      ref:
+        name: configuration-servicehub
+  mode: Pipeline
+  pipeline:
+  - step: patch-and-transform
+    functionRef:
+      name: upbound-function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      - name: controlplane
+        base:
+          apiVersion: mcp.upbound.io/v1alpha1
+          kind: ControlPlane
+          spec:
+            deletionPolicy: Orphan
+        patches:
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
+        - fromFieldPath: organization
+          toFieldPath: spec.forProvider.organizationName
+          type: FromEnvironmentFieldPath
+        - fromFieldPath: zoneConfiguration
+          toFieldPath: spec.forProvider.configuration
+          type: FromEnvironmentFieldPath
+      - name: robot
+        base:
+          apiVersion: iam.upbound.io/v1alpha1
+          kind: Robot
+          spec:
+            forProvider:
+              description: Zone Controller
+        patches:
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: spec.forProvider.name
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: metadata.labels[example.upbound.io/zone-id]
+        - fromFieldPath: organization
+          toFieldPath: spec.forProvider.owner.name
+          type: FromEnvironmentFieldPath
+      - name: token
+        base:
+          apiVersion: iam.upbound.io/v1alpha1
+          kind: Token
+          spec:
+            forProvider:
+              owner:
+                type: robots
+                idSelector:
+                  matchControllerRef: true
+        patches:
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: spec.forProvider.name
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: spec.forProvider.owner.idSelector.matchLabels[example.upbound.io/zone-id]
+        - fromFieldPath: spec.writeConnectionSecretToRef.namespace
+          toFieldPath: spec.writeConnectionSecretToRef.namespace
+        - fromFieldPath: metadata.uid
+          toFieldPath: spec.writeConnectionSecretToRef.name
+          transforms:
+          - type: string
+            string:
+              type: Format
+              fmt: "%s-token"
+      - name: kubeconfig
+        base:
+          apiVersion: mcp.upbound.io/v1alpha1
+          kind: ControlPlaneAuth
+          spec:
+            forProvider:
+              tokenSecretRef:
+                key: token
+            writeConnectionSecretToRef:
+              name: controlplane-a-kubeconfig
+              namespace: upbound-system
+        patches:
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: spec.forProvider.controlPlaneName
+        - fromFieldPath: organization
+          toFieldPath: spec.forProvider.organizationName
+        - fromFieldPath: spec.writeConnectionSecretToRef.namespace
+          toFieldPath: spec.forProvider.tokenSecretRef.namespace
+        - fromFieldPath: metadata.uid
+          toFieldPath: spec.forProvider.tokenSecretRef.name
+          transforms:
+          - type: string
+            string:
+              type: Format
+              fmt: "%s-token"
+        - fromFieldPath: spec.writeConnectionSecretToRef.namespace
+          toFieldPath: spec.writeConnectionSecretToRef.namespace
+        - fromFieldPath: spec.parameters.id
+          toFieldPath: spec.writeConnectionSecretToRef.name
+          transforms:
+          - type: string
+            string:
+              type: Format
+              fmt: "%s-kubeconfig"

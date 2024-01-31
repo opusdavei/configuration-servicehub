@@ -32,3 +32,8 @@ spec:
                     description: Zone ID used for identification throughout the platform
           status:
             description: Most recently observed state of the Composite Resource
+            type: object
+            properties:
+              zoneController:
+                description: Robot ID that interacts with the zone
+                type: string
