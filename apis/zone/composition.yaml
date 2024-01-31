@@ -35,12 +35,12 @@ spec:
         patches:
         - fromFieldPath: spec.parameters.id
           toFieldPath: metadata.annotations[crossplane.io/external-name]
-        - fromFieldPath: organization
+        - fromFieldPath: data.organization
           toFieldPath: spec.forProvider.organizationName
           type: FromEnvironmentFieldPath
           policy:
             fromFieldPath: Required
-        - fromFieldPath: zoneConfiguration
+        - fromFieldPath: data.zoneConfiguration
           toFieldPath: spec.forProvider.configuration
           type: FromEnvironmentFieldPath
           policy:
@@ -57,7 +57,7 @@ spec:
           toFieldPath: spec.forProvider.name
         - fromFieldPath: spec.parameters.id
           toFieldPath: metadata.labels[example.upbound.io/zone-id]
-        - fromFieldPath: organization
+        - fromFieldPath: data.organization
           toFieldPath: spec.forProvider.owner.name
           type: FromEnvironmentFieldPath
           policy:
@@ -100,7 +100,7 @@ spec:
         patches:
         - fromFieldPath: spec.parameters.id
           toFieldPath: spec.forProvider.controlPlaneName
-        - fromFieldPath: organization
+        - fromFieldPath: data.organization
           toFieldPath: spec.forProvider.organizationName
           type: FromEnvironmentFieldPath
           policy:
