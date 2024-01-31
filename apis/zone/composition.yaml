@@ -9,9 +9,14 @@ spec:
     kind: XZone
   environment:
     environmentConfigs:
-    - type: Reference
-      ref:
-        name: configuration-servicehub
+    - type: Selector
+      selector:
+        mode: Multiple
+        minMatch: 1
+        matchLabels: 
+        - key: example.upbound.io/environment
+          type: Value
+          value: configuration-servicehub
   mode: Pipeline
   pipeline:
   - step: patch-and-transform
@@ -30,12 +35,12 @@ spec:
         patches:
         - fromFieldPath: spec.parameters.id
           toFieldPath: metadata.annotations[crossplane.io/external-name]
-        - fromFieldPath: data.organization
+        - fromFieldPath: organization
           toFieldPath: spec.forProvider.organizationName
           type: FromEnvironmentFieldPath
           policy:
             fromFieldPath: Required
-        - fromFieldPath: data.zoneConfiguration
+        - fromFieldPath: zoneConfiguration
           toFieldPath: spec.forProvider.configuration
           type: FromEnvironmentFieldPath
           policy:
@@ -52,7 +57,7 @@ spec:
           toFieldPath: spec.forProvider.name
         - fromFieldPath: spec.parameters.id
           toFieldPath: metadata.labels[example.upbound.io/zone-id]
-        - fromFieldPath: data.organization
+        - fromFieldPath: organization
           toFieldPath: spec.forProvider.owner.name
           type: FromEnvironmentFieldPath
           policy:
@@ -95,7 +100,7 @@ spec:
         patches:
         - fromFieldPath: spec.parameters.id
           toFieldPath: spec.forProvider.controlPlaneName
-        - fromFieldPath: data.organization
+        - fromFieldPath: organization
           toFieldPath: spec.forProvider.organizationName
           type: FromEnvironmentFieldPath
           policy:
